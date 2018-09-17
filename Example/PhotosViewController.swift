@@ -33,7 +33,9 @@ class PhotosViewController: UICollectionViewController, UICollectionViewDelegate
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! PhotoCollectionViewCell
-        cell.imageView.image = data[indexPath.item]
+        cell.imageView.sp.image = data[indexPath.item]
+        cell.layer.borderColor = UIColor.cyan.cgColor
+        cell.layer.borderWidth = 1
         return cell
     }
 

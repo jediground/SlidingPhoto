@@ -130,31 +130,7 @@ public extension SlidingPhotoViewCell {
             return displayView.image
         }
         set {
-            let current = CACurrentMediaTime()
-            
             displayView.image = newValue
-            
-            if let image = newValue {
-                let iw = image.size.width
-                let ih = image.size.height
-                let vw = bounds.width
-                let vh = bounds.height
-                let scale = (ih / iw) / (vh / vw)
-                if !scale.isNaN && scale > 1.0 {
-                    // image: h > w
-                    contentMode = .scaleAspectFill
-                    layer.contentsRect = CGRect(x: 0, y: 0, width: 1, height: (iw / ih) * (vh / vw))
-                } else {
-                    // image: w > h
-                    contentMode = .scaleAspectFit
-                    layer.contentsRect = CGRect(origin: .zero, size: CGSize(width: 1, height: 1))
-                }
-            }
-            
-            if CACurrentMediaTime() - current > 0.2 {
-                layer.add(CATransition(), forKey: kCATransition)
-            }
-            
             layoutContents()
         }
     }
