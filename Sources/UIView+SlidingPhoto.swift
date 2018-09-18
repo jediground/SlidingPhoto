@@ -1,5 +1,5 @@
 //
-//  UIImageView+SlidingPhoto.swift
+//  UIView+SlidingPhoto.swift
 //  SlidingPhoto
 //
 //  Created by Shaw on 9/17/18.
@@ -44,8 +44,6 @@ public extension SlidingPhoto where Base: UIView {
     }
     
     func setImage(_ image: UIImage?, work: (_ image: UIImage?) -> Void) {
-        let current = CACurrentMediaTime()
-        
         work(image)
         
         if let image = image {
@@ -53,20 +51,23 @@ public extension SlidingPhoto where Base: UIView {
             let ih = image.size.height
             let vw = base.bounds.width
             let vh = base.bounds.height
-            let scale = (ih / iw) / (vh / vw)
-            if !scale.isNaN && scale > 1.0 {
-                // image: h > w
-                base.contentMode = .scaleToFill
-                base.layer.contentsRect = CGRect(x: 0, y: 0, width: 1, height: (iw / ih) * (vh / vw))
-            } else {
+            // vh/vw = ih*?/iw
+            // ? = (vh*iw)/(vw*ih)
+            let factor = (vh*iw)/(vw*ih)
+            if factor.isNaN || factor > 1 {
                 // image: w > h
                 base.contentMode = .scaleAspectFill
-                base.layer.contentsRect = CGRect(origin: .zero, size: CGSize(width: 1, height: 1))
+                base.layer.contentsRect = CGRect(x: 0, y: 0, width: 1, height: 1)
+            } else {
+                // image: h > w
+                base.contentMode = .scaleToFill
+                let minFactor = UIScreen.main.bounds.width / UIScreen.main.bounds.height
+                if factor < minFactor {
+                    base.layer.contentsRect = CGRect(x: 0, y: 0, width: 1, height: factor)
+                } else {
+                    base.layer.contentsRect = CGRect(x: 0, y: (1.0 - factor) / 2.0, width: 1, height: factor)
+                }
             }
-        }
-        
-        if CACurrentMediaTime() - current > 0.2 {
-            base.layer.add(CATransition(), forKey: kCATransition)
         }
     }
 }

@@ -22,7 +22,7 @@
 		F9CD70AB214CAA5500A78BCA /* SlideViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9CD70AA214CAA5500A78BCA /* SlideViewController.swift */; };
 		F9CD70AD214CAB0800A78BCA /* Images.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F9CD70AC214CAB0800A78BCA /* Images.bundle */; };
 		F9CD70AF214CAEB600A78BCA /* PhotosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9CD70AE214CAEB600A78BCA /* PhotosViewController.swift */; };
-		F9F7344E214FF4900024569D /* UIImageView+SlidingPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9F7344D214FF4900024569D /* UIImageView+SlidingPhoto.swift */; };
+		F9F7344E214FF4900024569D /* UIView+SlidingPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9F7344D214FF4900024569D /* UIView+SlidingPhoto.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,7 +69,7 @@
 		F9CD70AA214CAA5500A78BCA /* SlideViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideViewController.swift; sourceTree = "<group>"; };
 		F9CD70AC214CAB0800A78BCA /* Images.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Images.bundle; sourceTree = "<group>"; };
 		F9CD70AE214CAEB600A78BCA /* PhotosViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosViewController.swift; sourceTree = "<group>"; };
-		F9F7344D214FF4900024569D /* UIImageView+SlidingPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImageView+SlidingPhoto.swift"; sourceTree = "<group>"; };
+		F9F7344D214FF4900024569D /* UIView+SlidingPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+SlidingPhoto.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,7 +138,7 @@
 				F9CD7087214CA3A300A78BCA /* SlidingPhotoView.swift */,
 				F9CD7089214CA3A900A78BCA /* SlidingPhotoViewCell.swift */,
 				F9CD708B214CA41C00A78BCA /* SlidingPhotoProtocols.swift */,
-				F9F7344D214FF4900024569D /* UIImageView+SlidingPhoto.swift */,
+				F9F7344D214FF4900024569D /* UIView+SlidingPhoto.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -318,7 +318,7 @@
 				F9CD7088214CA3A300A78BCA /* SlidingPhotoView.swift in Sources */,
 				F9CD708A214CA3A900A78BCA /* SlidingPhotoViewCell.swift in Sources */,
 				F9CD708C214CA41C00A78BCA /* SlidingPhotoProtocols.swift in Sources */,
-				F9F7344E214FF4900024569D /* UIImageView+SlidingPhoto.swift in Sources */,
+				F9F7344E214FF4900024569D /* UIView+SlidingPhoto.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
