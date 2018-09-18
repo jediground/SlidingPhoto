@@ -51,9 +51,9 @@ public extension SlidingPhoto where Base: UIView {
             let ih = image.size.height
             let vw = base.bounds.width
             let vh = base.bounds.height
-            // vh/vw = ih*?/iw
-            // ? = (vh*iw)/(vw*ih)
-            let factor = (vh*iw)/(vw*ih)
+            // vh / vw = ih * ? / iw
+            // ? = (vh * iw) / (vw * ih)
+            let factor = (vh * iw) / (vw * ih)
             if factor.isNaN || factor > 1 {
                 // image: w > h
                 base.contentMode = .scaleAspectFill
@@ -61,12 +61,8 @@ public extension SlidingPhoto where Base: UIView {
             } else {
                 // image: h > w
                 base.contentMode = .scaleToFill
-                let minFactor = UIScreen.main.bounds.width / UIScreen.main.bounds.height
-                if factor < minFactor {
-                    base.layer.contentsRect = CGRect(x: 0, y: 0, width: 1, height: factor)
-                } else {
-                    base.layer.contentsRect = CGRect(x: 0, y: (1.0 - factor) / 2.0, width: 1, height: factor)
-                }
+                let y = factor < UIScreen.main.bounds.width / UIScreen.main.bounds.height ? 0 : (1.0 - factor) / 2.0
+                base.layer.contentsRect = CGRect(x: 0, y: y, width: 1, height: factor)
             }
         }
     }
