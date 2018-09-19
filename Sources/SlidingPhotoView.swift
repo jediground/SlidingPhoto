@@ -57,22 +57,6 @@ open class SlidingPhotoView: UIView {
         return view
     }()
     
-    private let backgroundView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .black
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    @IBInspectable override open var backgroundColor: UIColor? {
-        get {
-            return backgroundView.backgroundColor
-        }
-        set {
-            backgroundView.backgroundColor = newValue
-        }
-    }
-    
     private var scrollViewWidthAnchor: NSLayoutConstraint!
     
     public override init(frame: CGRect) {
@@ -90,13 +74,18 @@ open class SlidingPhotoView: UIView {
         reloadData()
     }
     
+    private final class DismissPanGestureRecognizer: UIPanGestureRecognizer {
+        override var delegate: UIGestureRecognizerDelegate? {
+            didSet {
+                if let delegate = delegate {
+                    assert(delegate.isKind(of: SlidingPhotoView.self), "'SlidingPhotoView built-in pan gesture recognizer must have itself as its delegate.'")
+                }
+            }
+        }
+    }
+    private(set) var panGestureRecognizer: UIPanGestureRecognizer = DismissPanGestureRecognizer()
+    
     private func setup() {
-        addSubview(backgroundView)
-        backgroundView.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
-        backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
-        backgroundView.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-        
         scrollView.delegate = self
         addSubview(scrollView)
         scrollView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
@@ -116,7 +105,7 @@ open class SlidingPhotoView: UIView {
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(onLongPress(sender:)))
         addGestureRecognizer(longPress)
         
-        panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(onPan(sender:)))
+        panGestureRecognizer = UIPanGestureRecognizer()
         panGestureRecognizer.delegate = self
         addGestureRecognizer(panGestureRecognizer)
     }
@@ -136,13 +125,6 @@ open class SlidingPhotoView: UIView {
     }
 
     private var reusableCells: [SlidingPhotoViewCell] = []
-    
-    private var panGestureRecognizer: UIPanGestureRecognizer!
-    open var disablePanToDismiss: Bool = false {
-        didSet {
-            panGestureRecognizer.isEnabled = !disablePanToDismiss
-        }
-    }
 }
 
 extension SlidingPhotoView: UIScrollViewDelegate {
@@ -222,52 +204,13 @@ private extension SlidingPhotoView {
         let touchPoint = sender.location(in: cell)
         delegate.slidingPhotoView?(self, didLongPressedAt: touchPoint, in: cell)
     }
-    
-    @objc private func onPan(sender: UIPanGestureRecognizer) {
-        switch sender.state {
-        case .changed:
-            let translation = sender.translation(in: self).y
-            let ratio = abs(translation / bounds.size.height)
-            scrollView.transform = CGAffineTransform(translationX: 0, y: translation)
-            backgroundView.alpha = 1 - ratio
-        case .ended:
-            let velocity = sender.velocity(in: self).y
-            let translation = sender.translation(in: self).y
-            
-            if abs(velocity) > 1000 || abs(translation) > 100 {
-                // -∞, -50, 50, +∞
-                // if [-∞, -50], MoveUp
-                // elif [-50, 50] && translation < 0, MoveUp
-                let isMoveUp = velocity < -50 || (abs(velocity) < 50 && translation < 0)
-                let movement = isMoveUp ? translation : -translation
-                let timeFactor = TimeInterval((bounds.size.height + movement) / bounds.size.height)
-                
-                UIView.animate(withDuration: timeFactor * 0.3, delay: 0, options: [.curveLinear, .beginFromCurrentState], animations: {
-                    self.scrollView.transform = CGAffineTransform(translationX: 0, y: self.bounds.size.height * (isMoveUp ? -1.0 : 1.0))
-                    self.backgroundView.alpha = 0
-                }, completion: { _ in
-                    self.removeFromSuperview()
-                    self.delegate?.didDismiss?(self)
-                })
-            } else {
-                UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: velocity / 1000.0, options: [.curveEaseInOut, .beginFromCurrentState, .allowUserInteraction], animations: {
-                    self.scrollView.transform = .identity
-                    self.backgroundView.alpha = 1
-                }, completion: { _ in
-                })
-            }
-        default:
-            self.scrollView.transform = .identity
-            self.backgroundView.alpha = 1
-        }
-    }
 }
 
 extension SlidingPhotoView: UIGestureRecognizerDelegate {
     override open func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         if gestureRecognizer == panGestureRecognizer {
             let velocity = panGestureRecognizer.velocity(in: panGestureRecognizer.view)
-            if fabs(velocity.y) > fabs(velocity.x), let cell = loadedCell(of: currentPage), cell.scrollView.zoomScale == 1.0, !cell.scrollView.isDragging, !cell.scrollView.isDecelerating {
+            if abs(velocity.y) > abs(velocity.x), let cell = loadedCell(of: currentPage), cell.scrollView.zoomScale == 1.0, !cell.scrollView.isDragging, !cell.scrollView.isDecelerating {
                 let contentHeight = cell.scrollView.contentSize.height
                 let boundsHeight = cell.scrollView.bounds.size.height
                 let offsetY = cell.scrollView.contentOffset.y

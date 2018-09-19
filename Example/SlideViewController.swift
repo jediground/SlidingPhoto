@@ -61,8 +61,4 @@ class SlideViewController: SlidingPhotoViewController {
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTappedAt location: CGPoint, in cell: SlidingPhotoViewCell) {
         presentingViewController?.dismiss(animated: true, completion: nil)
     }
-
-    override func didDismiss(_ slidingPhotoView: SlidingPhotoView) {
-        presentingViewController?.dismiss(animated: false, completion: nil)
-    }
 }

@@ -24,6 +24,4 @@ extension UIImageView: SlidingPhotoDisplayable {}
     @objc optional func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdatePageTo index: Int)
     @objc optional func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTappedAt location: CGPoint, `in` cell: SlidingPhotoViewCell)
     @objc optional func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didLongPressedAt location: CGPoint, `in` cell: SlidingPhotoViewCell)
-    
-    @objc optional func didDismiss(_ slidingPhotoView: SlidingPhotoView)
 }
