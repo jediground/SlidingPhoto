@@ -66,6 +66,11 @@ public extension SlidingPhoto where Base: UIView {
             }
         }
     }
+    
+    public var isContentsClippedToTop: Bool {
+        let contentsRect = base.layer.contentsRect
+        return contentsRect.minY == 0 && contentsRect.height < 1
+    }
 }
 
 public extension SlidingPhoto where Base: UIImageView {
