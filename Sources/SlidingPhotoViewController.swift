@@ -20,20 +20,9 @@ open class SlidingPhotoViewController: UIViewController {
     }
 
     private func setup() {
-        modalPresentationStyle = .overFullScreen
-        modalTransitionStyle = .crossDissolve
         transitioningDelegate = self
     }
     
-    public let slidingPhotoView: SlidingPhotoView = SlidingPhotoView()
-    private var interactiveTransition: UIPercentDrivenInteractiveTransition?
-    
-    enum TransitionType: CaseIterable {
-        case fromTop
-        case fromBottom
-    }
-    var transitionType: TransitionType = .fromTop
-
     let backgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = .black
@@ -49,6 +38,8 @@ open class SlidingPhotoViewController: UIViewController {
             backgroundView.backgroundColor = newValue
         }
     }
+
+    public let slidingPhotoView: SlidingPhotoView = SlidingPhotoView()    
 
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -92,23 +83,24 @@ extension SlidingPhotoViewController {
         case .ended:
             let velocity = sender.velocity(in: sender.view).y
             let translation = sender.translation(in: sender.view).y
-            let isMoveUp = (translation < -100 && velocity < 0) || (velocity < -1000 && translation < 0)
-            let isMoveDown = (translation > 100 && velocity > 0) || (velocity > 1000 && translation > 0)
+            let isMoveUp = velocity < -1000 && translation < 0
+            let isMoveDown = velocity > 1000 && translation > 0
             
             if isMoveUp || isMoveDown {
-                let translationY = slidingPhotoView.bounds.size.height * (isMoveUp ? -1.0 : 1.0)
-                UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseOut, .beginFromCurrentState], animations: {
+                let height = slidingPhotoView.bounds.size.height
+                let duration = TimeInterval(0.25 * (height - abs(translation)) / height)
+                let translationY = height * (isMoveUp ? -1.0 : 1.0)
+                UIView.animate(withDuration: duration, delay: 0, options: [.curveEaseOut, .beginFromCurrentState], animations: {
                     self.slidingPhotoView.transform = CGAffineTransform(translationX: 0, y: translationY)
                     self.backgroundView.alpha = 0
                 }, completion: { _ in
                     self.presentingViewController?.dismiss(animated: false, completion: nil)
                 })
             } else {
-                UIView.animate(withDuration: 0.25, delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: velocity / 1000.0, options: [.curveEaseInOut, .beginFromCurrentState, .allowUserInteraction], animations: {
+                UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseOut, .beginFromCurrentState, .allowUserInteraction], animations: {
                     self.slidingPhotoView.transform = .identity
                     self.backgroundView.alpha = 1
-                }, completion: { _ in
-                })
+                }, completion: nil)
             }
         default:
             slidingPhotoView.transform = .identity
@@ -118,12 +110,44 @@ extension SlidingPhotoViewController {
 }
 
 extension SlidingPhotoViewController: UIViewControllerTransitioningDelegate {
+    public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return PresentationAnimator(vc: self)
+    }
+    
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return DismissAnimation(vc: self)
+        return DismissionAnimator(vc: self)
     }
 }
 
-private final class DismissAnimation: NSObject, UIViewControllerAnimatedTransitioning {
+private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTransitioning {
+    private weak var vc: SlidingPhotoViewController!
+    init(vc: SlidingPhotoViewController) {
+        self.vc = vc
+        super.init()
+    }
+    
+    public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
+        return 0.25
+    }
+    
+    public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
+        guard let to = transitionContext.viewController(forKey: .to) else {
+            return transitionContext.completeTransition(false)
+        }
+        let container = transitionContext.containerView
+        to.view.frame = container.bounds
+        container.addSubview(to.view)
+        
+        vc.backgroundView.alpha = 0
+        UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0, options: [.curveEaseOut, .beginFromCurrentState], animations: {
+            self.vc.backgroundView.alpha = 1
+        }, completion: { _ in
+            transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+        })
+    }
+}
+
+private final class DismissionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     private weak var vc: SlidingPhotoViewController!
     init(vc: SlidingPhotoViewController) {
         self.vc = vc
@@ -141,8 +165,7 @@ private final class DismissAnimation: NSObject, UIViewControllerAnimatedTransiti
         let container = transitionContext.containerView
         container.addSubview(from.view)
         
-        let height = vc.slidingPhotoView.bounds.height
-        let translationY = vc.transitionType == .fromTop ? height : -height
+        let translationY = vc.slidingPhotoView.bounds.height
         UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0, options: [.curveEaseOut, .beginFromCurrentState], animations: {
             self.vc.slidingPhotoView.transform = CGAffineTransform(translationX: 0, y: translationY)
             self.vc.backgroundView.alpha = 0
