@@ -27,7 +27,11 @@ class SlideViewController: SlidingPhotoViewController {
 
     override func viewDidLoad() {
         SlidingPhotoViewCell.displayViewClass = AnimatedImageView.self
+
         super.viewDidLoad()
+        
+        slidingPhotoView.register(CustomPhotoViewCell.self)
+//        slidingPhotoView.register(NibPhotoCell.nib)
         slidingPhotoView.scrollToItem(at: fromPage, animated: false)
     }
     

@@ -125,6 +125,18 @@ open class SlidingPhotoView: UIView {
     }
 
     private var reusableCells: [SlidingPhotoViewCell] = []
+    
+    private var cellClass: SlidingPhotoViewCell.Type?
+    open func register<T: SlidingPhotoViewCell>(_ cellClass: T.Type) {
+        if nil != cellNib { return }
+        self.cellClass = cellClass
+    }
+
+    private var cellNib: UINib?
+    open func register(_ cellNib: UINib) {
+        if nil != cellClass { return }
+        self.cellNib = cellNib
+    }
 }
 
 extension SlidingPhotoView: UIScrollViewDelegate {
@@ -171,7 +183,18 @@ extension SlidingPhotoView: UIScrollViewDelegate {
     }
     
     private func dequeueReusableCell(`for` index: Int) -> SlidingPhotoViewCell {
-        let one: SlidingPhotoViewCell = reusableCells.lazy.filter({ $0.reusable }).first ?? SlidingPhotoViewCell()
+        let one: SlidingPhotoViewCell
+        if let first = reusableCells.lazy.filter({ $0.reusable }).first {
+            one = first
+        } else if let cellClass = cellClass {
+            one = cellClass.init()
+        } else if let cellNib = cellNib, let cell = cellNib.instantiate(withOwner: nil, options: nil).first {
+            assert(cell is SlidingPhotoViewCell, "Registered cell nib must be kind of `SlidingPhotoViewCell`.")
+            one = cell as! SlidingPhotoViewCell
+        } else {
+            one = SlidingPhotoViewCell()
+        }
+        
         var rect = bounds
         rect.origin.x = rect.size.width * CGFloat(index) + pageSpacing * (CGFloat(index) + 0.5)
         one.frame = rect
@@ -181,6 +204,7 @@ extension SlidingPhotoView: UIScrollViewDelegate {
             scrollView.addSubview(one)
             reusableCells.append(one)
         }
+        
         return one
     }
 }
