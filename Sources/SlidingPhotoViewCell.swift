@@ -9,8 +9,7 @@
 import UIKit
 
 open class SlidingPhotoViewCell: UIView {
-    public typealias DisplayView = UIView & SlidingPhotoDisplayable
-    public static var displayViewClass: DisplayView.Type = UIImageView.self
+    public static var displayViewClass: SlidingPhotoDisplayView.Type = UIImageView.self
     
     open internal(set) var index: Int = -1
     internal var reusable: Bool = true
@@ -34,7 +33,7 @@ open class SlidingPhotoViewCell: UIView {
         return view
     }()
     
-    public let displayView: DisplayView = {
+    public let displayView: SlidingPhotoDisplayView = {
         let view = SlidingPhotoViewCell.displayViewClass.init()
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true

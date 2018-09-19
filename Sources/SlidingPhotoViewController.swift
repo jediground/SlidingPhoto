@@ -39,7 +39,11 @@ open class SlidingPhotoViewController: UIViewController {
         }
     }
 
-    public let slidingPhotoView: SlidingPhotoView = SlidingPhotoView()    
+    public let slidingPhotoView: SlidingPhotoView = {
+        let view = SlidingPhotoView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -50,7 +54,6 @@ open class SlidingPhotoViewController: UIViewController {
         backgroundView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
-        slidingPhotoView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(slidingPhotoView)
         slidingPhotoView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         slidingPhotoView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
@@ -65,7 +68,8 @@ open class SlidingPhotoViewController: UIViewController {
 
 extension SlidingPhotoViewController: SlidingPhotoViewDataSource, SlidingPhotoViewDelegate {
     open func numberOfItems(in slidingPhotoView: SlidingPhotoView) -> Int { return 0 }
-    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, loadContentsFor cell: SlidingPhotoViewCell) {}
+    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, loadContentFor cell: SlidingPhotoViewCell) {}
+    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, thumbnailFor cell: SlidingPhotoViewCell) -> SlidingPhotoDisplayView? { return nil }
     
     open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdatePageTo index: Int) {}
     open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTappedAt location: CGPoint, in cell: SlidingPhotoViewCell) {}
@@ -131,17 +135,41 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
     }
     
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        guard let to = transitionContext.viewController(forKey: .to) else {
+        guard let toView = transitionContext.viewController(forKey: .to)?.view else {
             return transitionContext.completeTransition(false)
         }
-        let container = transitionContext.containerView
-        to.view.frame = container.bounds
-        container.addSubview(to.view)
         
+        let container = transitionContext.containerView
+        toView.frame = container.bounds
+        container.addSubview(toView)
+        toView.layoutIfNeeded()
+        
+        let slidingPhotoView = vc.slidingPhotoView
+        let currentPage = slidingPhotoView.currentPage
+        let cell = slidingPhotoView.acquireCell(for: currentPage)
+        let displayView = cell.displayView
+        
+        var transitionView: UIView?
+        if let thumbnail = slidingPhotoView.dataSource?.slidingPhotoView?(slidingPhotoView, thumbnailFor: cell) {
+            cell.image = thumbnail.image
+            
+            let view = UIView()
+            view.frame = thumbnail.convert(thumbnail.frame, to: toView)
+            view.sp.image = thumbnail.image
+            toView.addSubview(view)
+            transitionView = view
+        }
+
         vc.backgroundView.alpha = 0
-        UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0, options: [.curveEaseOut, .beginFromCurrentState], animations: {
+        displayView.alpha = 0
+        UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 10, options: [.curveEaseOut, .beginFromCurrentState], animations: {
             self.vc.backgroundView.alpha = 1
+            transitionView?.frame = displayView.convert(displayView.frame, to: toView)
+            transitionView?.contentMode = displayView.contentMode
+            transitionView?.layer.contentsRect = displayView.layer.contentsRect
         }, completion: { _ in
+            displayView.alpha = 1
+            transitionView?.removeFromSuperview()
             transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
         })
     }
@@ -159,17 +187,43 @@ private final class DismissionAnimator: NSObject, UIViewControllerAnimatedTransi
     }
 
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        guard let from = transitionContext.viewController(forKey: .from) else {
+        guard let fromView = transitionContext.viewController(forKey: .from)?.view else {
             return transitionContext.completeTransition(false)
         }
         let container = transitionContext.containerView
-        container.addSubview(from.view)
+        container.addSubview(fromView)
         
-        let translationY = vc.slidingPhotoView.bounds.height
-        UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0, options: [.curveEaseOut, .beginFromCurrentState], animations: {
-            self.vc.slidingPhotoView.transform = CGAffineTransform(translationX: 0, y: translationY)
+        let slidingPhotoView = vc.slidingPhotoView
+        let currentPage = slidingPhotoView.currentPage
+        let cell = slidingPhotoView.acquireCell(for: currentPage)
+        let displayView = cell.displayView
+        
+        let thumbnail = slidingPhotoView.dataSource?.slidingPhotoView?(slidingPhotoView, thumbnailFor: cell)
+        
+        var transitionView: UIView?
+        if nil != thumbnail {
+            let view = UIView()
+            view.clipsToBounds = true
+            view.frame = displayView.convert(displayView.frame, to: fromView)
+            view.sp.image = displayView.image
+            fromView.addSubview(view)
+            transitionView = view
+        }
+        
+        displayView.alpha = 0
+        UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 10, options: [.curveEaseOut, .beginFromCurrentState], animations: {
             self.vc.backgroundView.alpha = 0
+            if let thumbnail = thumbnail {
+                transitionView?.frame = thumbnail.convert(thumbnail.frame, to: fromView)
+                transitionView?.contentMode = thumbnail.contentMode
+                transitionView?.layer.contentsRect = thumbnail.layer.contentsRect
+            } else {
+                let translationY = self.vc.slidingPhotoView.bounds.height
+                self.vc.slidingPhotoView.transform = CGAffineTransform(translationX: 0, y: translationY)
+            }
         }, completion: { _ in
+            displayView.alpha = 1
+            transitionView?.removeFromSuperview()
             transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
         })
     }

@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		1D0DEB24ADC79A1E4A485605 /* Pods_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B45E00F9AAE44F8E3A7AEF4 /* Pods_Example.framework */; };
+		F961F2AB2152713500719E85 /* NibPhotoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F961F2A82152713500719E85 /* NibPhotoCell.xib */; };
+		F961F2AC2152713500719E85 /* CustomPhotoViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F961F2A92152713500719E85 /* CustomPhotoViewCell.swift */; };
+		F961F2AD2152713500719E85 /* NibPhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F961F2AA2152713500719E85 /* NibPhotoCell.swift */; };
 		F9CD707F214CA33E00A78BCA /* SlidingPhoto.h in Headers */ = {isa = PBXBuildFile; fileRef = F9CD707D214CA33E00A78BCA /* SlidingPhoto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F9CD7088214CA3A300A78BCA /* SlidingPhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9CD7087214CA3A300A78BCA /* SlidingPhotoView.swift */; };
 		F9CD708A214CA3A900A78BCA /* SlidingPhotoViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9CD7089214CA3A900A78BCA /* SlidingPhotoViewCell.swift */; };
@@ -53,6 +56,9 @@
 		5B45E00F9AAE44F8E3A7AEF4 /* Pods_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		676804CB7815F8ECCFF0F909 /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.release.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
 		E4B08BC10EB6B61546CD52A0 /* Pods-Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.debug.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.debug.xcconfig"; sourceTree = "<group>"; };
+		F961F2A82152713500719E85 /* NibPhotoCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NibPhotoCell.xib; sourceTree = "<group>"; };
+		F961F2A92152713500719E85 /* CustomPhotoViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPhotoViewCell.swift; sourceTree = "<group>"; };
+		F961F2AA2152713500719E85 /* NibPhotoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NibPhotoCell.swift; sourceTree = "<group>"; };
 		F9CD707A214CA33E00A78BCA /* SlidingPhoto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SlidingPhoto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9CD707D214CA33E00A78BCA /* SlidingPhoto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SlidingPhoto.h; sourceTree = "<group>"; };
 		F9CD707E214CA33E00A78BCA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -149,6 +155,9 @@
 				F9CD7095214CA99900A78BCA /* AppDelegate.swift */,
 				F9CD70AE214CAEB600A78BCA /* PhotosViewController.swift */,
 				F9CD70AA214CAA5500A78BCA /* SlideViewController.swift */,
+				F961F2A92152713500719E85 /* CustomPhotoViewCell.swift */,
+				F961F2AA2152713500719E85 /* NibPhotoCell.swift */,
+				F961F2A82152713500719E85 /* NibPhotoCell.xib */,
 				F9CD7099214CA99900A78BCA /* Main.storyboard */,
 				F9CD709C214CA99A00A78BCA /* Assets.xcassets */,
 				F9CD70AC214CAB0800A78BCA /* Images.bundle */,
@@ -262,6 +271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9CD70A0214CA99A00A78BCA /* LaunchScreen.storyboard in Resources */,
+				F961F2AB2152713500719E85 /* NibPhotoCell.xib in Resources */,
 				F9CD709D214CA99A00A78BCA /* Assets.xcassets in Resources */,
 				F9CD709B214CA99900A78BCA /* Main.storyboard in Resources */,
 				F9CD70AD214CAB0800A78BCA /* Images.bundle in Resources */,
@@ -326,9 +336,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F961F2AC2152713500719E85 /* CustomPhotoViewCell.swift in Sources */,
 				F9CD70AF214CAEB600A78BCA /* PhotosViewController.swift in Sources */,
 				F9CD7096214CA99900A78BCA /* AppDelegate.swift in Sources */,
 				F9CD70AB214CAA5500A78BCA /* SlideViewController.swift in Sources */,
+				F961F2AD2152713500719E85 /* NibPhotoCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

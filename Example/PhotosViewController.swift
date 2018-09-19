@@ -59,7 +59,7 @@ class PhotosViewController: UICollectionViewController, UICollectionViewDelegate
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let vc = SlideViewController(data: data, fromPage: indexPath.item)
+        let vc = SlideViewController(from: self, data: data, fromPage: indexPath.item)
         present(vc, animated: true, completion: nil)
     }
 }

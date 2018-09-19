@@ -31,7 +31,9 @@ open class SlidingPhotoView: UIView {
     
     @IBOutlet open weak var dataSource: SlidingPhotoViewDataSource? {
         didSet {
-            reloadData()
+            if oldValue?.isEqual(dataSource) == false {
+                reloadData()
+            }
         }
     }
     
@@ -156,7 +158,7 @@ extension SlidingPhotoView: UIScrollViewDelegate {
             let cell = acquireCell(for: index)
             if cell.reusable {
                 cell.reusable = false
-                dataSource.slidingPhotoView(self, loadContentsFor: cell)
+                dataSource.slidingPhotoView(self, loadContentFor: cell)
             }
         }
         
@@ -174,7 +176,7 @@ extension SlidingPhotoView: UIScrollViewDelegate {
         }
     }
     
-    private func acquireCell(`for` index: Int) -> SlidingPhotoViewCell {
+    func acquireCell(`for` index: Int) -> SlidingPhotoViewCell {
         return loadedCell(of: index) ?? dequeueReusableCell(for: index)
     }
     

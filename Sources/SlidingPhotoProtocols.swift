@@ -8,19 +8,23 @@
 
 import UIKit
 
-public protocol SlidingPhotoDisplayable: class {
+@objc public protocol SlidingPhotoDisplayable: class {
     var image: UIImage? { get set }
 }
 
+public typealias SlidingPhotoDisplayView = UIView & SlidingPhotoDisplayable
+
 extension UIImageView: SlidingPhotoDisplayable {}
 
-@objc public protocol SlidingPhotoViewDataSource {
+@objc public protocol SlidingPhotoViewDataSource: NSObjectProtocol {
     @objc func numberOfItems(in slidingPhotoView: SlidingPhotoView) -> Int
     /// In one transcation may invoke this methods multiple times with same indexed cell.
-    @objc func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, loadContentsFor cell: SlidingPhotoViewCell)
+    @objc func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, loadContentFor cell: SlidingPhotoViewCell)
+    /// Thumbnail for present animation.
+    @objc optional func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, thumbnailFor cell: SlidingPhotoViewCell) -> SlidingPhotoDisplayView?
 }
 
-@objc public protocol SlidingPhotoViewDelegate {
+@objc public protocol SlidingPhotoViewDelegate: NSObjectProtocol {
     @objc optional func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdatePageTo index: Int)
     @objc optional func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTappedAt location: CGPoint, `in` cell: SlidingPhotoViewCell)
     @objc optional func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didLongPressedAt location: CGPoint, `in` cell: SlidingPhotoViewCell)

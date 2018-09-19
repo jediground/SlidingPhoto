@@ -11,9 +11,11 @@ import SlidingPhoto
 import Kingfisher
 
 class SlideViewController: SlidingPhotoViewController {
+    private let vc: PhotosViewController
     private let data: [UIImage]
     private let fromPage: Int
-    init(data: [UIImage], fromPage: Int) {
+    init(from vc: PhotosViewController, data: [UIImage], fromPage: Int) {
+        self.vc = vc
         self.data = data
         self.fromPage = fromPage
         super.init(nibName: nil, bundle: nil)
@@ -55,11 +57,15 @@ class SlideViewController: SlidingPhotoViewController {
         return data.count
     }
     
-    override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, loadContentsFor cell: SlidingPhotoViewCell) {
+    override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, loadContentFor cell: SlidingPhotoViewCell) {
         let image = data[cell.index]
         if cell.image != image {
             cell.image = image
         }
+    }
+    
+    override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, thumbnailFor cell: SlidingPhotoViewCell) -> SlidingPhotoDisplayView? {
+        return (vc.collectionView.cellForItem(at: IndexPath(item: cell.index, section: 0)) as? PhotoCollectionViewCell)?.imageView
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTappedAt location: CGPoint, in cell: SlidingPhotoViewCell) {
