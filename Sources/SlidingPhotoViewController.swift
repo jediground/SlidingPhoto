@@ -144,6 +144,7 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
         container.addSubview(toView)
         toView.layoutIfNeeded()
         
+        let backgroundView = vc.backgroundView
         let slidingPhotoView = vc.slidingPhotoView
         let currentPage = slidingPhotoView.currentPage
         let cell = slidingPhotoView.acquireCell(for: currentPage)
@@ -157,48 +158,46 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
             cell.image = thumbnail.image
             
             let view = UIView()
+            
+            let fromRect = thumbnail.convert(thumbnail.frame, to: toView)
             if isContentsClippedToTop {
-                // TODO:
-                view.frame = displayView.convert(displayView.frame, to: toView)
-                let scale = thumbnail.bounds.width / view.bounds.width
-                // CenterX
-                view.center = CGPoint(x: thumbnail.frame.midX, y: view.frame.midY)
-                // Height
-                var rect = view.frame
-                rect.size.height = thumbnail.bounds.height / scale
-                view.frame = rect
-                // Scale
-                view.layer.setValue(scale, forKeyPath: "transform.scale")
-                // CenterY
-                view.center = CGPoint(x: view.frame.midX, y: thumbnail.frame.midY)
+                // Always display top content
+                view.layer.anchorPoint = CGPoint(x: 0.5, y: 0)
+
+                var destRect = displayView.convert(displayView.frame, to: toView)
+                let scale = thumbnail.bounds.width / destRect.width
+                destRect.size.height = thumbnail.bounds.height / scale
+                // y = minY, cuz anchorPoint = (0.5, 0)
+                destRect.origin = CGPoint(x: fromRect.midX - destRect.width / 2.0, y: fromRect.minY)
+                view.frame = destRect
+                view.transform = CGAffineTransform(scaleX: scale, y: scale)
             } else {
-                view.frame = thumbnail.convert(thumbnail.frame, to: toView)
+                view.frame = fromRect
             }
-            
+
             view.sp.image = thumbnail.image
-            
-            if isContentsClippedToTop {
-                view.contentMode = .scaleAspectFill
-                view.layer.contentsRect = CGRect(x: 0, y: 0, width: 1, height: 1)
-            }
             
             toView.addSubview(view)
             transitionView = view
+        } else {
+            displayView.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
         }
 
-        vc.backgroundView.alpha = 0
         displayView.alpha = 0
+        backgroundView.alpha = 0
         UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 10, options: [.curveEaseOut, .beginFromCurrentState], animations: {
-            self.vc.backgroundView.alpha = 1
-            if isContentsClippedToTop {
-                var destRect = displayView.convert(displayView.frame, to: toView)
-                destRect.size.height = slidingPhotoView.bounds.height
-                transitionView?.frame = destRect
-                transitionView?.layer.setValue(1, forKeyPath: "transform.scale")
-            } else {
+            backgroundView.alpha = 1
+
+            if nil != thumbnail {
+                if isContentsClippedToTop {
+                    transitionView?.transform = .identity
+                }
                 transitionView?.frame = displayView.convert(displayView.frame, to: toView)
                 transitionView?.contentMode = displayView.contentMode // .scaleAspectFill
                 transitionView?.layer.contentsRect = displayView.layer.contentsRect // {0, 0, 1, 1}
+            } else {
+                displayView.transform = .identity
+                displayView.alpha = 1
             }
         }, completion: { _ in
             displayView.alpha = 1
@@ -226,6 +225,7 @@ private final class DismissionAnimator: NSObject, UIViewControllerAnimatedTransi
         let container = transitionContext.containerView
         container.addSubview(fromView)
         
+        let backgroundView = vc.backgroundView
         let slidingPhotoView = vc.slidingPhotoView
         let currentPage = slidingPhotoView.currentPage
         let cell = slidingPhotoView.acquireCell(for: currentPage)
@@ -240,42 +240,47 @@ private final class DismissionAnimator: NSObject, UIViewControllerAnimatedTransi
             view.clipsToBounds = true
             if isContentsClippedToTop {
                 view.layer.anchorPoint = CGPoint(x: 0.5, y: 0)
+                cell.scrollView.contentOffset = .zero
             }
             view.frame = displayView.convert(displayView.frame, to: fromView)
             view.sp.image = displayView.image
             fromView.addSubview(view)
             transitionView = view
+            
+            displayView.alpha = 0
         }
         
-        displayView.alpha = 0
         UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 10, options: [.curveEaseOut, .beginFromCurrentState], animations: {
-            self.vc.backgroundView.alpha = 0
+            backgroundView.alpha = 0
+            
             if let thumbnail = thumbnail {
                 let destRect = thumbnail.convert(thumbnail.frame, to: fromView)
                 if isContentsClippedToTop {
+                    var rect = displayView.convert(displayView.frame, to: fromView)
                     var height = thumbnail.bounds.height / thumbnail.bounds.width * displayView.bounds.width
                     if height.isNaN {
                         height = displayView.bounds.width
                     }
-                    var rect = displayView.bounds
                     rect.size.height = height
+                    // y = minY, cuz anchorPoint = (0.5, 0)
+                    rect.origin = CGPoint(x: destRect.midX - rect.width / 2.0, y: destRect.minY)
                     transitionView?.frame = rect
-                    transitionView?.center = CGPoint(x: destRect.midX, y: destRect.minY)
+
                     let scale = thumbnail.bounds.width / displayView.bounds.width
-                    transitionView?.layer.setValue(scale, forKeyPath: "transform.scale")
+                    transitionView?.transform = CGAffineTransform(scaleX: scale, y: scale)
                 } else {
                     transitionView?.frame = destRect
                     transitionView?.contentMode = thumbnail.contentMode
                 }
                 transitionView?.layer.contentsRect = thumbnail.layer.contentsRect
             } else {
-                let translationY = self.vc.slidingPhotoView.bounds.height
-                self.vc.slidingPhotoView.transform = CGAffineTransform(translationX: 0, y: translationY)
+                slidingPhotoView.transform = CGAffineTransform(translationX: 0, y: slidingPhotoView.bounds.height)
             }
         }, completion: { _ in
             displayView.alpha = 1
+            backgroundView.alpha = 1
             transitionView?.layer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-            transitionView?.layer.setValue(1, forKeyPath: "transform.scale")
+            transitionView?.transform = .identity
             transitionView?.removeFromSuperview()
             transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
         })
