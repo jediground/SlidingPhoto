@@ -57,7 +57,8 @@ class SlideViewController: SlidingPhotoViewController {
         return data.count
     }
     
-    override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, loadContentFor cell: SlidingPhotoViewCell) {
+    override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, prepareForDisplay cell: SlidingPhotoViewCell) {
+        print("prepareForDisplay: \(cell.index)")
         let image = data[cell.index]
         if cell.image != image {
             cell.image = image
@@ -70,5 +71,14 @@ class SlideViewController: SlidingPhotoViewController {
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTappedAt location: CGPoint, in cell: SlidingPhotoViewCell) {
         presentingViewController?.dismiss(animated: true, completion: nil)
+    }
+    
+    override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdateFocus cell: SlidingPhotoViewCell) {
+//        print("didUpdateFocus: \(cell.index)")
+    }
+    
+    override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didEndDisplaying cell: SlidingPhotoViewCell) {
+        print("didEndDisplaying: \(cell.index)")
+//        cell.image = nil
     }
 }

@@ -19,7 +19,7 @@ open class SlidingPhotoView: UIView {
     open private(set) var currentPage: Int = 0 {
         didSet {
             if oldValue != currentPage {
-                delegate?.slidingPhotoView?(self, didUpdatePageTo: currentPage)
+                delegate?.slidingPhotoView?(self, didUpdateFocus: acquireCell(for: currentPage))
             }
         }
     }
@@ -158,7 +158,7 @@ extension SlidingPhotoView: UIScrollViewDelegate {
             let cell = acquireCell(for: index)
             if cell.reusable {
                 cell.reusable = false
-                dataSource.slidingPhotoView(self, loadContentFor: cell)
+                dataSource.slidingPhotoView(self, prepareForDisplay: cell)
             }
         }
         
@@ -166,7 +166,8 @@ extension SlidingPhotoView: UIScrollViewDelegate {
     }
     
     private func markCellAsReusableIfNeeded() {
-        reusableCells.lazy.filter({ !$0.reusable }).forEach { cell in
+        // TODO: didEndDisplaying
+        reusableCells.lazy.filter({ !$0.reusable && $0.index != self.currentPage }).forEach { cell in
             let offset = scrollView.contentOffset.x
             let width = scrollView.bounds.width
             if cell.frame.minX > offset + 2.0 * width || cell.frame.maxX < offset - width {
