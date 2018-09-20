@@ -224,7 +224,7 @@ private extension SlidingPhotoView {
             cell.scrollView.setZoomScale(1, animated: true)
         }
         let touchPoint = sender.location(in: cell)
-        delegate.slidingPhotoView?(self, didSingleTappedAt: touchPoint, in: cell)
+        delegate.slidingPhotoView?(self, didSingleTapped: cell, at: touchPoint)
     }
     
     @objc private func onDoubleTap(sender: UITapGestureRecognizer) {
@@ -235,7 +235,7 @@ private extension SlidingPhotoView {
     @objc private func onLongPress(sender: UILongPressGestureRecognizer) {
         guard sender.state == .ended, let cell = loadedCell(of: currentPage), let delegate = delegate else { return }
         let touchPoint = sender.location(in: cell)
-        delegate.slidingPhotoView?(self, didLongPressedAt: touchPoint, in: cell)
+        delegate.slidingPhotoView?(self, didLongPressed: cell, at: touchPoint)
     }
 }
 

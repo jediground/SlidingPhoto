@@ -69,13 +69,13 @@ open class SlidingPhotoViewController: UIViewController {
 extension SlidingPhotoViewController: SlidingPhotoViewDataSource, SlidingPhotoViewDelegate {
     open func numberOfItems(in slidingPhotoView: SlidingPhotoView) -> Int { return 0 }
     open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, prepareForDisplay cell: SlidingPhotoViewCell) {}
-    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, thumbnailFor cell: SlidingPhotoViewCell) -> SlidingPhotoDisplayView? { return nil }
+    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, thumbnailForTransition cell: SlidingPhotoViewCell) -> SlidingPhotoDisplayView? { return nil }
     
     open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdateFocus cell: SlidingPhotoViewCell) {}
     open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didEndDisplaying cell: SlidingPhotoViewCell) {}
 
-    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTappedAt location: CGPoint, in cell: SlidingPhotoViewCell) {}
-    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didLongPressedAt location: CGPoint, in cell: SlidingPhotoViewCell) {}
+    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTapped cell: SlidingPhotoViewCell, at location: CGPoint) {}
+    open func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didLongPressed cell: SlidingPhotoViewCell, at location: CGPoint) {}
 }
 
 extension SlidingPhotoViewController {
@@ -152,7 +152,7 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
         let cell = slidingPhotoView.acquireCell(for: currentPage)
         let displayView = cell.displayView
         
-        let thumbnail = slidingPhotoView.dataSource?.slidingPhotoView?(slidingPhotoView, thumbnailFor: cell)
+        let thumbnail = slidingPhotoView.dataSource?.slidingPhotoView?(slidingPhotoView, thumbnailForTransition: cell)
         let isContentsClippedToTop = (thumbnail as UIView?)?.sp.isContentsClippedToTop == true
 
         var transitionView: UIView?
@@ -242,7 +242,7 @@ private final class DismissionAnimator: NSObject, UIViewControllerAnimatedTransi
         let cell = slidingPhotoView.acquireCell(for: currentPage)
         let displayView = cell.displayView
         
-        let thumbnail = slidingPhotoView.dataSource?.slidingPhotoView?(slidingPhotoView, thumbnailFor: cell)
+        let thumbnail = slidingPhotoView.dataSource?.slidingPhotoView?(slidingPhotoView, thumbnailForTransition: cell)
         let isContentsClippedToTop = (thumbnail as UIView?)?.sp.isContentsClippedToTop == true
         
         var transitionView: UIView?
