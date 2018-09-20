@@ -143,21 +143,22 @@ open class SlidingPhotoView: UIView {
 
 extension SlidingPhotoView: UIScrollViewDelegate {
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        // Mark cell as reusable if needed
-        markCellAsReusableIfNeeded()
-        
         guard let dataSource = dataSource else { return }
         
-        // Load preview & next page
-        let page = Int(scrollView.contentOffset.x / scrollView.bounds.width)
-        let range = page - 1 ... page + 1
         let numberOfItems = dataSource.numberOfItems(in: self)
         assert(numberOfItems >= 0, "Fatal Error: `numberOfItems` should >= 0.")
         
-        for index in range where index >= 0 && index < numberOfItems {
+        // Load preview & next page
+        let page = Int(scrollView.contentOffset.x / scrollView.bounds.width)
+        let range = max(page - 1, 0) ... min(page + 1, numberOfItems - 1)
+        
+        // Mark cell as reusable if needed
+        purgeCellsExclude(range)
+        
+        for index in range {
             let cell = acquireCell(for: index)
-            if cell.reusable {
-                cell.reusable = false
+            if !cell.prepared {
+                cell.prepared = true
                 dataSource.slidingPhotoView(self, prepareForDisplay: cell)
             }
         }
@@ -165,18 +166,18 @@ extension SlidingPhotoView: UIScrollViewDelegate {
         currentPage = page
     }
     
-    private func markCellAsReusableIfNeeded() {
-        // TODO: didEndDisplaying
-        reusableCells.lazy.filter({ !$0.reusable && $0.index != self.currentPage }).forEach { cell in
+    private func purgeCellsExclude(_ range: ClosedRange<Int>) {
+        reusableCells.lazy.filter({ !range.contains($0.index) }).forEach { cell in
             let offset = scrollView.contentOffset.x
             let width = scrollView.bounds.width
-            if cell.frame.minX > offset + 2.0 * width || cell.frame.maxX < offset - width {
-                cell.reusable = true
+            if cell.prepared && (cell.frame.minX > offset + 2.0 * width || cell.frame.maxX < offset - width) {
+                delegate?.slidingPhotoView?(self, didEndDisplaying: cell)
+                cell.prepared = false
                 cell.index = -1
             }
         }
     }
-    
+
     func acquireCell(`for` index: Int) -> SlidingPhotoViewCell {
         return loadedCell(of: index) ?? dequeueReusableCell(for: index)
     }
@@ -187,7 +188,7 @@ extension SlidingPhotoView: UIScrollViewDelegate {
     
     private func dequeueReusableCell(`for` index: Int) -> SlidingPhotoViewCell {
         let one: SlidingPhotoViewCell
-        if let first = reusableCells.lazy.filter({ $0.reusable }).first {
+        if let first = reusableCells.lazy.filter({ !$0.prepared }).first {
             one = first
         } else if let cellClass = cellClass {
             one = cellClass.init()

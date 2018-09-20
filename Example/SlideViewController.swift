@@ -59,10 +59,7 @@ class SlideViewController: SlidingPhotoViewController {
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, prepareForDisplay cell: SlidingPhotoViewCell) {
         print("prepareForDisplay: \(cell.index)")
-        let image = data[cell.index]
-        if cell.image != image {
-            cell.image = image
-        }
+        cell.image = data[cell.index]
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, thumbnailFor cell: SlidingPhotoViewCell) -> SlidingPhotoDisplayView? {
@@ -74,11 +71,11 @@ class SlideViewController: SlidingPhotoViewController {
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdateFocus cell: SlidingPhotoViewCell) {
-//        print("didUpdateFocus: \(cell.index)")
+        print("didUpdateFocus: \(cell.index)")
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didEndDisplaying cell: SlidingPhotoViewCell) {
         print("didEndDisplaying: \(cell.index)")
-//        cell.image = nil
+        cell.image = nil
     }
 }

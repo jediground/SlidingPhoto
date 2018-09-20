@@ -12,7 +12,7 @@ open class SlidingPhotoViewCell: UIView {
     public static var displayViewClass: SlidingPhotoDisplayView.Type = UIImageView.self
     
     open internal(set) var index: Int = -1
-    internal var reusable: Bool = true
+    internal var prepared: Bool = false
     
     let scrollView: UIScrollView = {
         let view = UIScrollView(frame: .zero)

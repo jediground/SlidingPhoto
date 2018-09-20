@@ -18,7 +18,6 @@ extension UIImageView: SlidingPhotoDisplayable {}
 
 @objc public protocol SlidingPhotoViewDataSource: NSObjectProtocol {
     @objc func numberOfItems(in slidingPhotoView: SlidingPhotoView) -> Int
-    /// In one transcation may invoke this methods multiple times with same indexed cell.
     @objc func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, prepareForDisplay cell: SlidingPhotoViewCell)
     /// Thumbnail for present animation.
     @objc optional func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, thumbnailFor cell: SlidingPhotoViewCell) -> SlidingPhotoDisplayView?
