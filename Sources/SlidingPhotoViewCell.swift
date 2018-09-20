@@ -96,7 +96,7 @@ open class SlidingPhotoViewCell: UIView {
     }
     
     func onDoubleTap(sender: UITapGestureRecognizer) {
-        if scrollView.zoomScale > 1 {
+        if scrollView.zoomScale != 1 {
             scrollView.setZoomScale(1, animated: true)
         } else {
             let scale = scrollView.maximumZoomScale
