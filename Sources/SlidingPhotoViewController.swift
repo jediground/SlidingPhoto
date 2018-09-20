@@ -156,8 +156,13 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
         let isContentsClippedToTop = (thumbnail as UIView?)?.sp.isContentsClippedToTop == true
 
         var transitionView: UIView?
+        var useThumbnailData = false
         if let thumbnail = thumbnail {
-            cell.image = thumbnail.image
+            // Ensure cell contents loaded
+            if nil == cell.image {
+                cell.image = thumbnail.image
+                useThumbnailData = true
+            }
             
             let view = UIView()
             
@@ -204,6 +209,10 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
         }, completion: { _ in
             displayView.alpha = 1
             transitionView?.removeFromSuperview()
+            // Reload transition cell
+            if useThumbnailData {
+                slidingPhotoView.dataSource?.slidingPhotoView(slidingPhotoView, prepareForDisplay: cell)
+            }
             transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
         })
     }

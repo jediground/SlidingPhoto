@@ -149,7 +149,7 @@ extension SlidingPhotoView: UIScrollViewDelegate {
         assert(numberOfItems >= 0, "Fatal Error: `numberOfItems` should >= 0.")
         
         // Load preview & next page
-        let page = Int(scrollView.contentOffset.x / scrollView.bounds.width)
+        let page = Int(scrollView.contentOffset.x / scrollView.bounds.width + 0.5)
         let range = max(page - 1, 0) ... min(page + 1, numberOfItems - 1)
         
         // Mark cell as reusable if needed
@@ -163,7 +163,9 @@ extension SlidingPhotoView: UIScrollViewDelegate {
             }
         }
         
-        currentPage = page
+        if (0 ..< numberOfItems).contains(page) {
+            currentPage = page
+        }
     }
     
     private func purgeCellsExclude(_ range: ClosedRange<Int>) {

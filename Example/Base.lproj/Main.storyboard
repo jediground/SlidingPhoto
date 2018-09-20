@@ -52,7 +52,28 @@
                             <outlet property="delegate" destination="JCG-Lk-JKF" id="lme-vh-HUI"/>
                         </connections>
                     </collectionView>
-                    <navigationItem key="navigationItem" id="bWl-Bl-HBz"/>
+                    <navigationItem key="navigationItem" id="bWl-Bl-HBz">
+                        <barButtonItem key="leftBarButtonItem" title="Clear Cache" id="47p-Bj-kdN">
+                            <connections>
+                                <action selector="handleClickClearCache:" destination="JCG-Lk-JKF" id="KaM-vQ-WG5"/>
+                            </connections>
+                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem id="EmR-bg-1bb">
+                                <switch key="customView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" id="cyc-gd-600">
+                                    <rect key="frame" x="308" y="6.5" width="51" height="31"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <connections>
+                                        <action selector="toggleLoadOnlineImages:" destination="JCG-Lk-JKF" eventType="valueChanged" id="kqh-3X-hLb"/>
+                                    </connections>
+                                </switch>
+                            </barButtonItem>
+                            <barButtonItem title="Online Images" id="Wsd-KO-4MZ"/>
+                        </rightBarButtonItems>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="loadImageSettingSwitch" destination="cyc-gd-600" id="REa-DB-Sjv"/>
+                    </connections>
                 </collectionViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gFn-BG-piX" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

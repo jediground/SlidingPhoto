@@ -11,12 +11,19 @@ import SlidingPhoto
 import Kingfisher
 
 class SlideViewController: SlidingPhotoViewController {
+    private lazy var data: [UIImage] = {
+        let bundlePath = Bundle(for: type(of: self)).path(forResource: "Images", ofType: "bundle")!
+        let bundle = Bundle(path: bundlePath)!
+        let paths = (0...10).map({ bundle.path(forResource: "image-\($0)", ofType: "jpg")! })
+        let bins = paths.map({ try! Data(contentsOf: URL(fileURLWithPath: $0)) })
+        let images = bins.map({ Kingfisher<Image>.image(data: $0, scale: 1, preloadAllAnimationData: true, onlyFirstFrame: false) })
+        return images.compactMap({ $0 })
+    }()
+    
     private let vc: PhotosViewController
-    private let data: [UIImage]
     private let fromPage: Int
-    init(from vc: PhotosViewController, data: [UIImage], fromPage: Int) {
+    init(from vc: PhotosViewController, fromPage: Int) {
         self.vc = vc
-        self.data = data
         self.fromPage = fromPage
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .overFullScreen
@@ -26,6 +33,12 @@ class SlideViewController: SlidingPhotoViewController {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    let pager: UIPageControl = {
+        let view = UIPageControl()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
     override func viewDidLoad() {
         SlidingPhotoViewCell.displayViewClass = AnimatedImageView.self
@@ -35,6 +48,16 @@ class SlideViewController: SlidingPhotoViewController {
         slidingPhotoView.register(CustomPhotoViewCell.self)
 //        slidingPhotoView.register(NibPhotoCell.nib)
         slidingPhotoView.scrollToItem(at: fromPage, animated: false)
+        
+        pager.numberOfPages = data.count
+        pager.currentPage = fromPage
+        view.addSubview(pager)
+        pager.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        if #available(iOS 11.0, *) {
+            pager.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        } else {
+            pager.bottomAnchor.constraint(equalTo: bottomLayoutGuide.topAnchor).isActive = true
+        }
     }
     
     private lazy var statusBarWindow: UIView = UIApplication.shared.value(forKey: "statusBarWindow") as! UIView
@@ -58,8 +81,15 @@ class SlideViewController: SlidingPhotoViewController {
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, prepareForDisplay cell: SlidingPhotoViewCell) {
-        print("prepareForDisplay: \(cell.index)")
-        cell.image = data[cell.index]
+        if UserDefaults.standard.loadOnlineImages {
+            // FIXME
+            let url = URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-\(cell.index).jpg")!
+            KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { (image, error, type, url) in
+                cell.image = image
+            }
+        } else {
+            cell.image = data[cell.index]
+        }
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, thumbnailFor cell: SlidingPhotoViewCell) -> SlidingPhotoDisplayView? {
@@ -67,15 +97,15 @@ class SlideViewController: SlidingPhotoViewController {
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTappedAt location: CGPoint, in cell: SlidingPhotoViewCell) {
+        vc.focusToCellAtIndexPath(IndexPath(item: cell.index, section: 0), at: cell.index > fromPage ? .bottom : .top)
         presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdateFocus cell: SlidingPhotoViewCell) {
-        print("didUpdateFocus: \(cell.index)")
+        pager.currentPage = cell.index
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didEndDisplaying cell: SlidingPhotoViewCell) {
-        print("didEndDisplaying: \(cell.index)")
         cell.image = nil
     }
 }
