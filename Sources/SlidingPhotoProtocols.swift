@@ -14,7 +14,8 @@ import UIKit
 
 public typealias SlidingPhotoDisplayView = UIView & SlidingPhotoDisplayable
 
-extension UIImageView: SlidingPhotoDisplayable {}
+extension UIImageView: SlidingPhotoDisplayable {
+}
 
 @objc public protocol SlidingPhotoViewDataSource: NSObjectProtocol {
     @objc func numberOfItems(in slidingPhotoView: SlidingPhotoView) -> Int

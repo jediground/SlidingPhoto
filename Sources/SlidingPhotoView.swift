@@ -220,9 +220,6 @@ extension SlidingPhotoView: UIScrollViewDelegate {
 private extension SlidingPhotoView {
     @objc private func onSingleTap(sender: UITapGestureRecognizer) {
         guard sender.state == .ended, let cell = loadedCell(of: currentPage), let delegate = delegate else { return }
-        if cell.scrollView.zoomScale != 1 {
-            cell.scrollView.setZoomScale(1, animated: true)
-        }
         let touchPoint = sender.location(in: cell)
         delegate.slidingPhotoView?(self, didSingleTapped: cell, at: touchPoint)
     }

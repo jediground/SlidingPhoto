@@ -51,10 +51,10 @@ class SlideViewController: SlidingPhotoViewController {
         
         pager.numberOfPages = data.count
         pager.currentPage = fromPage
-        view.addSubview(pager)
+        contentView.addSubview(pager)
         pager.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         if #available(iOS 11.0, *) {
-            pager.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+            pager.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor).isActive = true
         } else {
             pager.bottomAnchor.constraint(equalTo: bottomLayoutGuide.topAnchor).isActive = true
         }
@@ -97,8 +97,25 @@ class SlideViewController: SlidingPhotoViewController {
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTapped cell: SlidingPhotoViewCell, at location: CGPoint) {
-        vc.focusToCellAtIndexPath(IndexPath(item: cell.index, section: 0), at: cell.index > fromPage ? .bottom : .top)
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        if cell.isContentZoomed {
+           cell.isContentZoomed.toggle()
+        } else {
+            let displayView = cell.displayView as! AnimatedImageView
+            if displayView.image?.images?.isEmpty == false {
+                let rect = displayView.convert(displayView.frame, to: cell)
+                if rect.contains(location) {
+                    if displayView.isAnimating {
+                        displayView.stopAnimating()
+                    } else {
+                        displayView.startAnimating()
+                    }
+                    return
+                }
+            }
+            
+            vc.focusToCellAtIndexPath(IndexPath(item: cell.index, section: 0), at: cell.index > fromPage ? .bottom : .top)
+            presentingViewController?.dismiss(animated: true, completion: nil)
+        }
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdateFocus cell: SlidingPhotoViewCell) {

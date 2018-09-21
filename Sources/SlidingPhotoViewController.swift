@@ -23,7 +23,7 @@ open class SlidingPhotoViewController: UIViewController {
         transitioningDelegate = self
     }
     
-    let backgroundView: UIView = {
+    public let contentView: UIView = {
         let view = UIView()
         view.backgroundColor = .black
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -32,10 +32,10 @@ open class SlidingPhotoViewController: UIViewController {
     
     open var backgroundViewColor: UIColor? {
         get {
-            return backgroundView.backgroundColor
+            return contentView.backgroundColor
         }
         set {
-            backgroundView.backgroundColor = newValue
+            contentView.backgroundColor = newValue
         }
     }
 
@@ -48,11 +48,11 @@ open class SlidingPhotoViewController: UIViewController {
     override open func viewDidLoad() {
         super.viewDidLoad()
         
-        view.addSubview(backgroundView)
-        backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        backgroundView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        view.addSubview(contentView)
+        contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        contentView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
         view.addSubview(slidingPhotoView)
         slidingPhotoView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
@@ -85,7 +85,7 @@ extension SlidingPhotoViewController {
             let translation = sender.translation(in: sender.view).y
             let ratio = abs(translation / view.bounds.size.height)
             slidingPhotoView.transform = CGAffineTransform(translationX: 0, y: translation)
-            backgroundView.alpha = 1 - ratio
+            contentView.alpha = 1 - ratio
         case .ended:
             let velocity = sender.velocity(in: sender.view).y
             let translation = sender.translation(in: sender.view).y
@@ -98,19 +98,19 @@ extension SlidingPhotoViewController {
                 let translationY = height * (isMoveUp ? -1.0 : 1.0)
                 UIView.animate(withDuration: duration, delay: 0, options: [.curveEaseOut, .beginFromCurrentState], animations: {
                     self.slidingPhotoView.transform = CGAffineTransform(translationX: 0, y: translationY)
-                    self.backgroundView.alpha = 0
+                    self.contentView.alpha = 0
                 }, completion: { _ in
                     self.presentingViewController?.dismiss(animated: false, completion: nil)
                 })
             } else {
                 UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseOut, .beginFromCurrentState, .allowUserInteraction], animations: {
                     self.slidingPhotoView.transform = .identity
-                    self.backgroundView.alpha = 1
+                    self.contentView.alpha = 1
                 }, completion: nil)
             }
         default:
             slidingPhotoView.transform = .identity
-            backgroundView.alpha = 1
+            contentView.alpha = 1
         }
     }
 }
@@ -146,7 +146,7 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
         container.addSubview(toView)
         toView.layoutIfNeeded()
         
-        let backgroundView = vc.backgroundView
+        let backgroundView = vc.contentView
         let slidingPhotoView = vc.slidingPhotoView
         let currentPage = slidingPhotoView.currentPage
         let cell = slidingPhotoView.acquireCell(for: currentPage)
@@ -236,7 +236,7 @@ private final class DismissionAnimator: NSObject, UIViewControllerAnimatedTransi
         let container = transitionContext.containerView
         container.addSubview(fromView)
         
-        let backgroundView = vc.backgroundView
+        let backgroundView = vc.contentView
         let slidingPhotoView = vc.slidingPhotoView
         let currentPage = slidingPhotoView.currentPage
         let cell = slidingPhotoView.acquireCell(for: currentPage)
