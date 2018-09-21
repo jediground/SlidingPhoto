@@ -159,8 +159,8 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
         var useThumbnailData = false
         if let thumbnail = thumbnail {
             // Ensure cell contents loaded
-            if nil == cell.image {
-                cell.image = thumbnail.image
+            if nil == displayView.image {
+                displayView.image = thumbnail.image
                 useThumbnailData = true
             }
             
@@ -207,12 +207,12 @@ private final class PresentationAnimator: NSObject, UIViewControllerAnimatedTran
                 displayView.alpha = 1
             }
         }, completion: { _ in
-            displayView.alpha = 1
-            transitionView?.removeFromSuperview()
             // Reload transition cell
             if useThumbnailData {
                 slidingPhotoView.dataSource?.slidingPhotoView(slidingPhotoView, prepareForDisplay: cell)
             }
+            displayView.alpha = 1
+            transitionView?.removeFromSuperview()
             transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
         })
     }

@@ -23,13 +23,16 @@ extension UserDefaults {
 }
 
 class PhotosViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
-    private lazy var data: [UIImage] = {
+    private lazy var remoteUrls: [URL] = {
+        // FIXME
+        return (0...10).map({ URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-small-\($0).jpg")! })
+    }()
+    
+    private lazy var localUrls: [URL] = {
         let bundlePath = Bundle(for: type(of: self)).path(forResource: "Images", ofType: "bundle")!
         let bundle = Bundle(path: bundlePath)!
         let paths = (0...10).map({ bundle.path(forResource: "image-small-\($0)", ofType: "jpg")! })
-        let bins = paths.map({ try! Data(contentsOf: URL(fileURLWithPath: $0)) })
-        let images = bins.map({ Kingfisher<Image>.image(data: $0, scale: 1, preloadAllAnimationData: true, onlyFirstFrame: false) })
-        return images.compactMap({ $0 })
+        return paths.map({ URL(fileURLWithPath: $0) })
     }()
     
     override func viewDidLoad() {
@@ -52,7 +55,7 @@ class PhotosViewController: UICollectionViewController, UICollectionViewDelegate
     // MARK: UICollectionViewDataSource
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return data.count
+        return localUrls.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -62,18 +65,9 @@ class PhotosViewController: UICollectionViewController, UICollectionViewDelegate
         cell.setNeedsLayout()
         cell.layoutIfNeeded()
         
-        if UserDefaults.standard.loadOnlineImages {
-            // FIXME
-            let url = URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-small-\(indexPath.item).jpg")!
-            KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { (image, error, type, url) in
-                if let jpegData = image?.jpegData(compressionQuality: 0.2) {
-                    cell.imageView.sp.image = UIImage(data: jpegData)
-                } else {
-                    cell.imageView.sp.image = image
-                }
-            }
-        } else {
-            cell.imageView.sp.image = data[indexPath.item]
+        let url = UserDefaults.standard.loadOnlineImages ? remoteUrls[indexPath.item] : localUrls[indexPath.item]
+        cell.imageView.kf.setImage(with: url) { [weak cell] (image, error, cacheType, url) in
+            cell?.imageView.sp.image = image
         }
         
         cell.layer.borderColor = UIColor.cyan.cgColor

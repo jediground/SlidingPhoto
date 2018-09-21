@@ -33,13 +33,23 @@ open class SlidingPhotoViewCell: UIView {
         return view
     }()
     
-    public let displayView: SlidingPhotoDisplayView = {
+    @objc dynamic public let displayView: SlidingPhotoDisplayView = {
         let view = SlidingPhotoViewCell.displayViewClass.init()
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
         view.isUserInteractionEnabled = false
         return view
     }()
+    
+    private var observation: NSKeyValueObservation?
+
+    deinit {
+        if let observer = observation {
+            observation = nil
+            removeObserver(observer, forKeyPath: "displayView.image")
+            observer.invalidate()
+        }
+    }
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -65,6 +75,12 @@ open class SlidingPhotoViewCell: UIView {
         
         displayView.frame = bounds
         scrollView.addSubview(displayView)
+
+        observation = observe(\.displayView.image, options: [.new]) { (self, change) in
+            if nil != change.newValue {
+                self.layoutContents()
+            }
+        }
     }
     
     private func layoutContents() {
@@ -127,19 +143,5 @@ extension SlidingPhotoViewCell: UIScrollViewDelegate {
     
     public func scrollViewDidZoom(_ scrollView: UIScrollView) {
         centerContents()
-    }
-}
-
-// MARK: -
-
-public extension SlidingPhotoViewCell {
-    public var image: UIImage? {
-        get {
-            return displayView.image
-        }
-        set {
-            displayView.image = newValue
-            layoutContents()
-        }
     }
 }

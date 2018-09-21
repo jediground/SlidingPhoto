@@ -20,6 +20,18 @@ class SlideViewController: SlidingPhotoViewController {
         return images.compactMap({ $0 })
     }()
     
+    private lazy var remoteUrls: [URL] = {
+        // FIXME
+        return (0...10).map({ URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-\($0).jpg")! })
+    }()
+    
+    private lazy var localUrls: [URL] = {
+        let bundlePath = Bundle(for: type(of: self)).path(forResource: "Images", ofType: "bundle")!
+        let bundle = Bundle(path: bundlePath)!
+        let paths = (0...10).map({ bundle.path(forResource: "image-\($0)", ofType: "jpg")! })
+        return paths.map({ URL(fileURLWithPath: $0) })
+    }()
+    
     private let vc: PhotosViewController
     private let fromPage: Int
     init(from vc: PhotosViewController, fromPage: Int) {
@@ -81,14 +93,9 @@ class SlideViewController: SlidingPhotoViewController {
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, prepareForDisplay cell: SlidingPhotoViewCell) {
-        if UserDefaults.standard.loadOnlineImages {
-            // FIXME
-            let url = URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-\(cell.index).jpg")!
-            KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { (image, error, type, url) in
-                cell.image = image
-            }
-        } else {
-            cell.image = data[cell.index]
+        let url = UserDefaults.standard.loadOnlineImages ? remoteUrls[cell.index] : localUrls[cell.index]
+        if let imageView = cell.displayView as? UIImageView {
+            imageView.kf.setImage(with: url, placeholder: imageView.image, options: [.backgroundDecode, .transition(.none)])
         }
     }
     
@@ -100,8 +107,8 @@ class SlideViewController: SlidingPhotoViewController {
         if cell.isContentZoomed {
            cell.isContentZoomed.toggle()
         } else {
-            let displayView = cell.displayView as! AnimatedImageView
-            if displayView.image?.images?.isEmpty == false {
+            if cell.index == 1 { // GIF
+                let displayView = cell.displayView as! AnimatedImageView
                 let rect = displayView.convert(displayView.frame, to: cell)
                 if rect.contains(location) {
                     if displayView.isAnimating {
@@ -123,6 +130,6 @@ class SlideViewController: SlidingPhotoViewController {
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didEndDisplaying cell: SlidingPhotoViewCell) {
-        cell.image = nil
+        cell.displayView.image = nil
     }
 }
