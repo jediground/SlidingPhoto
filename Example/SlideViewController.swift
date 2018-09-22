@@ -11,24 +11,15 @@ import SlidingPhoto
 import Kingfisher
 
 class SlideViewController: SlidingPhotoViewController {
-    private lazy var data: [UIImage] = {
-        let bundlePath = Bundle(for: type(of: self)).path(forResource: "Images", ofType: "bundle")!
-        let bundle = Bundle(path: bundlePath)!
-        let paths = (0...10).map({ bundle.path(forResource: "image-\($0)", ofType: "jpg")! })
-        let bins = paths.map({ try! Data(contentsOf: URL(fileURLWithPath: $0)) })
-        let images = bins.map({ Kingfisher<Image>.image(data: $0, scale: 1, preloadAllAnimationData: true, onlyFirstFrame: false) })
-        return images.compactMap({ $0 })
-    }()
-    
     private lazy var remoteUrls: [URL] = {
         // FIXME
-        return (0...10).map({ URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-\($0).jpg")! })
+        return (0..<10).map({ URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-\($0).jpg")! })
     }()
     
     private lazy var localUrls: [URL] = {
         let bundlePath = Bundle(for: type(of: self)).path(forResource: "Images", ofType: "bundle")!
         let bundle = Bundle(path: bundlePath)!
-        let paths = (0...10).map({ bundle.path(forResource: "image-\($0)", ofType: "jpg")! })
+        let paths = (0..<10).map({ bundle.path(forResource: "image-\($0)", ofType: "jpg")! })
         return paths.map({ URL(fileURLWithPath: $0) })
     }()
     
@@ -61,7 +52,7 @@ class SlideViewController: SlidingPhotoViewController {
 //        slidingPhotoView.register(NibPhotoCell.nib)
         slidingPhotoView.scrollToItem(at: fromPage, animated: false)
         
-        pager.numberOfPages = data.count
+        pager.numberOfPages = localUrls.count
         pager.currentPage = fromPage
         contentView.addSubview(pager)
         pager.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -76,6 +67,11 @@ class SlideViewController: SlidingPhotoViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        if UIScreen.main.isNotchExist {
+            return
+        }
+        
         UIView.animate(withDuration: 0.25) {
             self.statusBarWindow.transform = CGAffineTransform(translationX: 0, y: -UIApplication.shared.statusBarFrame.height)
         }
@@ -83,19 +79,33 @@ class SlideViewController: SlidingPhotoViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        
+        if UIScreen.main.isNotchExist {
+            return
+        }
+        
         UIView.animate(withDuration: 0.25) {
             self.statusBarWindow.transform = .identity
         }
     }
     
     override func numberOfItems(in slidingPhotoView: SlidingPhotoView) -> Int {
-        return data.count
+        return localUrls.count
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, prepareForDisplay cell: SlidingPhotoViewCell) {
+        let cell = cell as! CustomPhotoViewCell
         let url = UserDefaults.standard.loadOnlineImages ? remoteUrls[cell.index] : localUrls[cell.index]
         if let imageView = cell.displayView as? UIImageView {
-            imageView.kf.setImage(with: url, placeholder: imageView.image, options: [.backgroundDecode, .transition(.none)])
+            imageView.kf.setImage(with: url, placeholder: imageView.image, options: [.backgroundDecode, .transition(.none)], progressBlock: { [weak cell] (current, total) in
+                let progress = CGFloat(current) / CGFloat(total)
+                let displayProgress = progress - 0.1 > 0 ? progress - 0.1 : progress
+                cell?.progressLayer.strokeEnd = displayProgress
+                cell?.progressLayer.isHidden = false
+            }) { [weak cell] (image, error, cache, url) in
+                cell?.progressLayer.strokeEnd = 1
+                cell?.progressLayer.isHidden = true
+            }
         }
     }
     
@@ -106,23 +116,23 @@ class SlideViewController: SlidingPhotoViewController {
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didSingleTapped cell: SlidingPhotoViewCell, at location: CGPoint) {
         if cell.isContentZoomed {
            cell.isContentZoomed.toggle()
-        } else {
-            if cell.index == 1 { // GIF
-                let displayView = cell.displayView as! AnimatedImageView
-                let rect = displayView.convert(displayView.frame, to: cell)
-                if rect.contains(location) {
-                    if displayView.isAnimating {
-                        displayView.stopAnimating()
-                    } else {
-                        displayView.startAnimating()
-                    }
-                    return
-                }
-            }
-            
-            vc.focusToCellAtIndexPath(IndexPath(item: cell.index, section: 0), at: cell.index > fromPage ? .bottom : .top)
-            presentingViewController?.dismiss(animated: true, completion: nil)
         }
+        
+        if cell.index == 1 { // GIF
+            let displayView = cell.displayView as! AnimatedImageView
+            let rect = displayView.convert(displayView.frame, to: cell)
+            if rect.contains(location) {
+                if displayView.isAnimating {
+                    displayView.stopAnimating()
+                } else {
+                    displayView.startAnimating()
+                }
+                return
+            }
+        }
+        
+        vc.focusToCellAtIndexPath(IndexPath(item: cell.index, section: 0), at: cell.index > fromPage ? .bottom : .top)
+        presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdateFocus cell: SlidingPhotoViewCell) {
@@ -131,5 +141,23 @@ class SlideViewController: SlidingPhotoViewController {
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didEndDisplaying cell: SlidingPhotoViewCell) {
         cell.displayView.image = nil
+        
+        if let cell = cell as? CustomPhotoViewCell {
+            cell.progressLayer.isHidden = true
+            cell.progressLayer.strokeEnd = 0
+        }
+    }
+}
+
+extension UIScreen {
+    public var isNotchExist: Bool {
+        switch UIScreen.main.nativeBounds.size {
+        case CGSize(width: 1125, height: 2436),
+             CGSize(width: 1242, height: 2688),
+             CGSize(width: 828, height: 1792):
+            return true
+        default:
+            return false
+        }
     }
 }
