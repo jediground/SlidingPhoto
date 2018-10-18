@@ -11,18 +11,8 @@ import SlidingPhoto
 import Kingfisher
 
 class SlideViewController: SlidingPhotoViewController {
-    private lazy var data: [UIImage] = {
-        let bundlePath = Bundle(for: type(of: self)).path(forResource: "Images", ofType: "bundle")!
-        let bundle = Bundle(path: bundlePath)!
-        let paths = (0...10).map({ bundle.path(forResource: "image-\($0)", ofType: "jpg")! })
-        let bins = paths.map({ try! Data(contentsOf: URL(fileURLWithPath: $0)) })
-        let images = bins.map({ Kingfisher<Image>.image(data: $0, scale: 1, preloadAllAnimationData: true, onlyFirstFrame: false) })
-        return images.compactMap({ $0 })
-    }()
-    
     private lazy var remoteUrls: [URL] = {
-        // FIXME
-        return (0...10).map({ URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-\($0).jpg")! })
+        return (0...10).map({ URL(string: "https://github.com/cuzv/SlidingPhoto/raw/master/Example/Images.bundle/image-\($0).jpg")! })
     }()
     
     private lazy var localUrls: [URL] = {
@@ -61,7 +51,7 @@ class SlideViewController: SlidingPhotoViewController {
 //        slidingPhotoView.register(NibPhotoCell.nib)
         slidingPhotoView.scrollToItem(at: fromPage, animated: false)
         
-        pager.numberOfPages = data.count
+        pager.numberOfPages = localUrls.count
         pager.currentPage = fromPage
         contentView.addSubview(pager)
         pager.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -89,7 +79,7 @@ class SlideViewController: SlidingPhotoViewController {
     }
     
     override func numberOfItems(in slidingPhotoView: SlidingPhotoView) -> Int {
-        return data.count
+        return localUrls.count
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, prepareForDisplay cell: SlidingPhotoViewCell) {
@@ -123,6 +113,37 @@ class SlideViewController: SlidingPhotoViewController {
             vc.focusToCellAtIndexPath(IndexPath(item: cell.index, section: 0), at: cell.index > fromPage ? .bottom : .top)
             presentingViewController?.dismiss(animated: true, completion: nil)
         }
+    }
+    
+    override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didLongPressed cell: SlidingPhotoViewCell, at location: CGPoint) {
+        UIView.animate(withDuration: 0.25, animations: {
+            cell.displayView.transform = .init(scaleX: 0.1, y: 0.1)
+        }, completion: { _ in
+            cell.displayView.image = nil
+            cell.displayView.transform = .identity
+            
+            if self.localUrls.count == 1 {
+                self.pager.numberOfPages -= 1
+                self.localUrls.remove(at: cell.index)
+                return
+            }
+            
+            let isDeleteLast = cell.index == self.localUrls.count - 1
+            if isDeleteLast {
+                slidingPhotoView.scrollToItem(at: cell.index - 1, animated: true)
+            } else {
+                slidingPhotoView.scrollToItem(at: cell.index + 1, animated: true)
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
+                self.localUrls.remove(at: cell.index)
+                self.pager.numberOfPages -= 1
+                if !isDeleteLast {
+                    slidingPhotoView.scrollToItem(at: cell.index, animated: false)
+                }
+                slidingPhotoView.reloadData()
+            })
+        })
     }
     
     override func slidingPhotoView(_ slidingPhotoView: SlidingPhotoView, didUpdateFocus cell: SlidingPhotoViewCell) {

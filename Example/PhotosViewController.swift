@@ -24,8 +24,7 @@ extension UserDefaults {
 
 class PhotosViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     private lazy var remoteUrls: [URL] = {
-        // FIXME
-        return (0...10).map({ URL(string: "https://github.com/jediground/SlidingPhoto/raw/master/Example/Images.bundle/image-small-\($0).jpg")! })
+        return (0...10).map({ URL(string: "https://github.com/cuzv/SlidingPhoto/raw/master/Example/Images.bundle/image-small-\($0).jpg")! })
     }()
     
     private lazy var localUrls: [URL] = {

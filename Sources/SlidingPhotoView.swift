@@ -112,8 +112,10 @@ open class SlidingPhotoView: UIView {
         addGestureRecognizer(panGestureRecognizer)
     }
     
-    private func reloadData() {
+    open func reloadData() {
         guard let dataSource = dataSource else { return }
+        
+        reusableCells.forEach({ purge($0) })
         
         let itemWidth = scrollView.bounds.width
         let itemHeight = scrollView.bounds.height
@@ -144,9 +146,8 @@ open class SlidingPhotoView: UIView {
 extension SlidingPhotoView: UIScrollViewDelegate {
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard let dataSource = dataSource else { return }
-        
         let numberOfItems = dataSource.numberOfItems(in: self)
-        assert(numberOfItems >= 0, "Fatal Error: `numberOfItems` should >= 0.")
+        guard numberOfItems > 0 else { return }
         
         // Load preview & next page
         let page = Int(scrollView.contentOffset.x / scrollView.bounds.width + 0.5)
@@ -173,11 +174,15 @@ extension SlidingPhotoView: UIScrollViewDelegate {
             let offset = scrollView.contentOffset.x
             let width = scrollView.bounds.width
             if cell.prepared && (cell.frame.minX > offset + 2.0 * width || cell.frame.maxX < offset - width) {
-                delegate?.slidingPhotoView?(self, didEndDisplaying: cell)
-                cell.prepared = false
-                cell.index = -1
+                purge(cell)
             }
         }
+    }
+    
+    private func purge(_ cell: SlidingPhotoViewCell) {
+        delegate?.slidingPhotoView?(self, didEndDisplaying: cell)
+        cell.prepared = false
+        cell.index = -1
     }
 
     func acquireCell(`for` index: Int) -> SlidingPhotoViewCell {
