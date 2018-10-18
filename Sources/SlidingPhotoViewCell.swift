@@ -84,6 +84,9 @@ open class SlidingPhotoViewCell: UIView {
     }
     
     private func layoutContents() {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        
         scrollView.zoomScale = 1
         scrollView.frame = bounds
         
@@ -98,6 +101,8 @@ open class SlidingPhotoViewCell: UIView {
         scrollView.contentSize = size
         
         centerContents()
+        
+        CATransaction.commit()
     }
     
     private func centerContents() {

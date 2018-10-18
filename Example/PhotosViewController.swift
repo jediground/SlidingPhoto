@@ -30,7 +30,7 @@ class PhotosViewController: UICollectionViewController, UICollectionViewDelegate
     private lazy var localUrls: [URL] = {
         let bundlePath = Bundle(for: type(of: self)).path(forResource: "Images", ofType: "bundle")!
         let bundle = Bundle(path: bundlePath)!
-        let paths = (0...10).map({ bundle.path(forResource: "image-small-\($0)", ofType: "jpg")! })
+        let paths = (0..<10).map({ bundle.path(forResource: "image-small-\($0)", ofType: "jpg")! })
         return paths.map({ URL(fileURLWithPath: $0) })
     }()
     
